@@ -6,19 +6,30 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] private Camera playerCamera;
     private Animator animController;
-    private CharacterController characterController;
+    private CharacterController playerController;
 
     public float rotateSpeed = 10;
-    public float moveSpeed = 1;
-    public float gravity = 20;
+    public float moveSpeed = 6f;
+    public float gravity = 10;
     public float jumpForce = 8;
 
+    private float jumpCooldown = 0;
+    private float jumpTime = 0;
+
+    private const float JUMP_TIME_MAX = 1.5f;
+    private const float JUMP_TIME_MIN = 0;
+
+    bool isGrounded;
+
     Vector3 moveDir;
+    Vector3 jumpDir;
+
+    Quaternion newRotation;
 
     private void Awake()
     {
         animController = transform.GetComponent<Animator>();
-        characterController = transform.GetComponent<CharacterController>();
+        playerController = transform.GetComponent<CharacterController>();
         if (playerCamera == null)
         {
             playerCamera = transform.Find("MainCamera").GetComponent<Camera>();
@@ -29,7 +40,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         animController.SetBool("IsGrounded", true);
-        characterController.stepOffset = 0.4f;
+        playerController.stepOffset = 0.4f;
     }
 
     // Update is called once per frame
@@ -41,6 +52,8 @@ public class PlayerController : MonoBehaviour
         Vector3 camForward;
         Vector3 camRight;
 
+        isGrounded = playerController.isGrounded;
+
         camForward = playerCamera.transform.forward;
         camRight = playerCamera.transform.right;
 
@@ -50,22 +63,95 @@ public class PlayerController : MonoBehaviour
             moveDir = transform.position + new Vector3(moveX*.1f, 0, moveY * .1f);
         }*/
 
-        moveDir = new Vector3(((camForward.x * moveZ) + (camRight.x * moveX)) * moveSpeed, 0, ((camForward.z * moveZ) + (camRight.z * moveX)) * moveSpeed);
-
-        if (characterController.isGrounded && Input.GetButton("Jump"))
+        if (isGrounded && jumpDir.y < 0)
         {
-            moveDir.y = jumpForce;
-            animController.SetBool("IsGrounded", characterController.isGrounded);
+            jumpDir.y = -1f;
         }
 
-        moveDir.y -= gravity * Time.deltaTime;
 
-        characterController.Move(moveDir);
+        if (Input.GetButtonDown("Sprint"))
+        {
+            moveSpeed *= 3;
+        }
+        else if (Input.GetButtonUp("Sprint"))
+        {
+            moveSpeed /= 3;
+        }
 
+        moveDir = new Vector3(((camForward.x * moveZ) + (camRight.x * moveX)) * moveSpeed * Time.deltaTime, 0, ((camForward.z * moveZ) + (camRight.z * moveX)) * moveSpeed * Time.deltaTime);
+
+        if (moveX != 0 || moveZ != 0)
+        {
+            newRotation = Quaternion.LookRotation(moveDir);
+        }
+
+        /*if (playerController.isGrounded && Input.GetButtonDown("Jump"))
+        {
+            moveDir.y += jumpForce * Time.deltaTime;
+            if (jumpTime < JUMP_TIME_MAX)
+            {
+                
+                animController.SetBool("IsGrounded", playerController.isGrounded);
+                //jumpCooldown += 3f;
+                jumpTime = Mathf.Clamp(jumpTime += Time.deltaTime, JUMP_TIME_MIN, JUMP_TIME_MAX);
+                //print(jumpTime);
+            }
+        }
+        else if (!playerController.isGrounded && Input.GetButtonUp("Jump"))
+        {
+            moveDir.y -= gravity * Time.deltaTime;
+            if (jumpTime > JUMP_TIME_MIN)
+            {
+                
+                jumpTime = Mathf.Clamp(jumpTime -= Time.deltaTime, JUMP_TIME_MIN, JUMP_TIME_MAX);
+                //print(jumpTime);
+            }
+        }*/
+
+        /*if (Input.GetButton("Jump") && jumpTime < JUMP_TIME_MAX)
+        {
+            moveDir.y = jumpForce * Time.deltaTime;
+            jumpTime = Mathf.Clamp(jumpTime += Time.deltaTime, JUMP_TIME_MIN, JUMP_TIME_MAX);
+        }
+        else if (!Input.GetButton("Jump") && jumpTime > JUMP_TIME_MIN)
+        {
+            moveDir.y -= gravity * Time.deltaTime;
+            jumpTime = Mathf.Clamp(jumpTime -= Time.deltaTime, JUMP_TIME_MIN, JUMP_TIME_MAX);
+        }
+        else if (!playerController.isGrounded)
+        {
+            moveDir.y -= gravity * Time.deltaTime;
+        }*/
+
+       
+        playerController.Move(moveDir);
+        
+        if(Input.GetButtonDown("Jump") && isGrounded)
+        {
+            jumpDir.y = Mathf.Sqrt(0.05f * 4f);
+        }
+
+        jumpDir.y -= 0.8f * Time.deltaTime;
+
+        playerController.Move(jumpDir);
+
+        transform.rotation = Quaternion.Slerp(transform.rotation, newRotation, 0.2f);
+        
+
+        /*if (jumpCooldown > 0)
+        {
+            jumpCooldown -= Time.deltaTime;
+            jumpCooldown = Mathf.Clamp(jumpCooldown, 0, 3);
+        }*/
+
+        animController.SetBool("IsGrounded", isGrounded);
+        animController.SetFloat("PlayerSpeed", moveSpeed);
         moveDir = Vector3.zero;
+        //print(playerController.isGrounded);
+    }
 
-        animController.SetBool("IsGrounded", characterController.isGrounded);
-        animController.SetFloat("PlayerSpeed", moveDir.magnitude);
-        print(characterController.isGrounded);
+    private void PlayerJump()
+    {
+        playerController.Move(jumpDir);
     }
 }

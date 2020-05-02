@@ -13,11 +13,17 @@ public class CameraController : MonoBehaviour
     float rotSpeedX = 8;
     float rotSpeedY = 5;
 
-    public float distance = 10;
-    public Transform playerTrans;
+    bool reduceDist = false;
+
+    bool gameFocus = false;
+
+    private float distance = 10;
+    public Transform camLookAt;
     Camera playerCam;
     Transform cameraTrans;
     SphereCollider camCollider;
+
+    Vector3 newPlayerPos;
 
     private void Awake()
     {
@@ -37,17 +43,57 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        camCurX += (Input.GetAxis("Mouse X") * rotSpeedX);
-        camCurY -= (Input.GetAxis("Mouse Y") * rotSpeedY);
+        if (gameFocus)
+        {
+            newPlayerPos = camLookAt.position;
+            newPlayerPos.y += 10;
+            camCurX += (Input.GetAxis("Mouse X") * rotSpeedX);
+            camCurY -= (Input.GetAxis("Mouse Y") * rotSpeedY);
 
-        camCurY = Mathf.Clamp(camCurY, CAM_Y_MIN, CAM_Y_MAX);
+            camCurY = Mathf.Clamp(camCurY, CAM_Y_MIN, CAM_Y_MAX);
+
+            if (reduceDist)
+            {
+                distance++;
+            }
+        }
+        
     }
 
     void LateUpdate()
     {
         Vector3 dir = new Vector3(0, 0, -distance);
         Quaternion rotation = Quaternion.Euler(camCurY, camCurX, 0);
-        cameraTrans.position = playerTrans.position + rotation * dir;
-        cameraTrans.LookAt(playerTrans.position);
+        cameraTrans.position = camLookAt.position + rotation * dir;
+        cameraTrans.LookAt(camLookAt);
+
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        print("hit something");
+        reduceDist = true;   
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        print("hit nothing");
+        reduceDist = false;
+    }
+
+    private void OnApplicationFocus(bool focus)
+    {
+        //print(focus);
+        gameFocus = focus;
+    }
+
+    private void OnApplicationPause(bool pause)
+    {
+        //print("in pause");
+    }
+
+    private void OnApplicationQuit()
+    {
+        //print("quit app");
     }
 }
