@@ -17,6 +17,8 @@ public class CameraController : MonoBehaviour
 
     bool gameFocus = false;
 
+    public bool firstPerson = false;
+
     private float distance = 10;
     public Transform camLookAt;
     Camera playerCam;
@@ -32,6 +34,10 @@ public class CameraController : MonoBehaviour
         camCollider = this.GetComponent<SphereCollider>();
         Cursor.visible = false; // hide mouse cursor
         Cursor.lockState = CursorLockMode.Locked; // Bound cursor with in the screen
+        if (firstPerson)
+        {
+            distance = 0.1f;
+        }
     }
 
     // Start is called before the first frame update
@@ -52,10 +58,10 @@ public class CameraController : MonoBehaviour
 
             camCurY = Mathf.Clamp(camCurY, CAM_Y_MIN, CAM_Y_MAX);
 
-            if (reduceDist)
+            /*if (reduceDist)
             {
                 distance++;
-            }
+            }*/
         }
         
     }
