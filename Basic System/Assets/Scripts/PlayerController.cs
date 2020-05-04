@@ -21,6 +21,8 @@ public class PlayerController : MonoBehaviour
     public GameObject rightFoot;
 
     bool isGrounded;
+    public bool autoJump = true;
+    public bool canSprint = false;
 
     Vector3 moveDir;
     Vector3 jumpDir;
@@ -58,26 +60,21 @@ public class PlayerController : MonoBehaviour
         camForward = playerCamera.transform.forward;
         camRight = playerCamera.transform.right;
 
-        /*if (moveX != 0 && moveY !=0)
-        {
-            //print(moveX + "|" + moveY);
-            moveDir = transform.position + new Vector3(moveX*.1f, 0, moveY * .1f);
-        }*/
-
         if (isGrounded && jumpDir.y < 0)
         {
             jumpDir.y = -1f;
         }
 
 
-        if (Input.GetButtonDown("Sprint"))
+        if (Input.GetButtonDown("Sprint") && canSprint)
         {
             moveSpeed *= 3;
         }
-        else if (Input.GetButtonUp("Sprint"))
+        else if (Input.GetButtonUp("Sprint") && canSprint)
         {
             moveSpeed /= 3;
         }
+
 
         moveDir.x = (camForward.x * moveZ) + (camRight.x * moveX);
         moveDir.z = (camForward.z * moveZ) + (camRight.z * moveX);
@@ -87,48 +84,39 @@ public class PlayerController : MonoBehaviour
         {
             newRotation = Quaternion.LookRotation(moveDir);
         }
+ 
+        playerController.Move(moveDir);
 
-        // check if player have ground to step on
-
-        RaycastHit leftHit;
-        RaycastHit rightHit;
-
-        Ray leftRay = new Ray(leftFoot.transform.position, transform.up * -1);
-        Ray rightRay = new Ray(rightFoot.transform.position, transform.up * -1);
-
-        if (Physics.Raycast(leftRay, out leftHit, 1.9f) && Physics.Raycast(rightRay, out rightHit, 1.9f))
+        if (autoJump)
         {
-            //Debug.Log(leftHit.collider.name);
-            //Debug.Log("on ground");
+            // check if player have ground to step on
+
+            RaycastHit leftHit;
+            RaycastHit rightHit;
+
+            Ray leftRay = new Ray(leftFoot.transform.position, transform.up * -1);
+            Ray rightRay = new Ray(rightFoot.transform.position, transform.up * -1);
+
+            if (!Physics.Raycast(leftRay, out leftHit, 1.9f) && !Physics.Raycast(rightRay, out rightHit, 1.9f))
+            {
+                if (moveDir.magnitude * 10 >= 1f && isGrounded)
+                {
+                    jumpDir.y = Mathf.Sqrt(0.05f * jumpHeight);
+                    //Debug.Log("jump");
+                }
+                else
+                {
+                    //Debug.Log("ledge");
+                }
+            }
         }
-        else
+        else if (!autoJump)
         {
-            //Debug.Log(moveDir.magnitude);
-            if (moveDir.magnitude * 10 >= 1f && isGrounded)
+            if (Input.GetButtonDown("Jump") && isGrounded)
             {
                 jumpDir.y = Mathf.Sqrt(0.05f * jumpHeight);
-                Debug.Log("jump");
             }
-            else
-            {
-                Debug.Log("ledge");
-            }
-            
         }
-
-        Debug.DrawRay(leftFoot.transform.position, transform.up * -2, Color.green, 1);
-        Debug.DrawRay(rightFoot.transform.position, transform.up * -2, Color.red, 1);
-
-        //Debug.DrawRay(leftFoot.transform.position, (transform.up + (-0.7f * transform.forward)) * -1, Color.green, 1);
-        //Debug.DrawRay(rightFoot.transform.position, (transform.up + new Vector3(-0.7f, 0, 0)) * -1, Color.red, 1);
-
-       
-        playerController.Move(moveDir);
-        
-        /*if(Input.GetButtonDown("Jump") && isGrounded)
-        {
-            jumpDir.y = Mathf.Sqrt(0.05f * jumpHeight);
-        }*/
 
         jumpDir.y -= 0.8f * Time.deltaTime;
 
@@ -145,5 +133,10 @@ public class PlayerController : MonoBehaviour
     private void PlayerJump()
     {
         playerController.Move(jumpDir);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log(collision.collider.name);
     }
 }
