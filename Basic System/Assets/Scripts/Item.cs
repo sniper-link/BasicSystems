@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public enum ItemType
 {
-    Money,
+    Currency,
     Ammo,
     Material
 }
@@ -16,4 +16,11 @@ public class Item : ScriptableObject
     public string itemName;
     public ItemType itemType;
     public int amount;
+
+    public Item(string name, ItemType type)
+    {
+        itemName = name;
+        itemType = type;
+        amount = 0;
+    }
 }

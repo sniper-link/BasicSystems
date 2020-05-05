@@ -39,8 +39,8 @@ public class PlayerInventory : MonoBehaviour
         Gear sword1 = new Gear("Basic Sword", GearType.Sword, 1);
         Gear shield1 = new Gear("Basic Shield", GearType.Shield, 1);
         AddToGear(bow1);
-        AddToGear(bow2);
-        AddToGear(bow3);
+        //AddToGear(bow2);
+        //AddToGear(bow3);
         AddToGear(sword1);
         AddToGear(shield1);
         //Debug.Log(bow.gearType);
@@ -63,10 +63,12 @@ public class PlayerInventory : MonoBehaviour
 
     private void PrintOutItems()
     {
-        foreach (KeyValuePair<string, Gear> entry in gearBag)
+        /*foreach (KeyValuePair<string, Gear> entry in gearBag)
         {
             Debug.Log("Item " + entry.Key + " - name: " + entry.Value.gearName + " || type: " + entry.Value.gearType);
-        }
+        }*/
+        itemBag.TryGetValue("Money", out Item money);
+        Debug.Log(money.amount);
     }
 
     private void AddToGear(Gear gear)
@@ -86,5 +88,19 @@ public class PlayerInventory : MonoBehaviour
             Debug.Log("Gear too low score");
         }
         
+    }
+
+    public void AddMoney(int amount)
+    {
+        if (itemBag.TryGetValue("Money", out Item money))
+        {
+            money.amount += amount;
+        }
+        else if (money == null)
+        {
+            itemBag.Add("Money", new Item("Money", ItemType.Currency));
+            itemBag.TryGetValue("Money", out Item item);
+            item.amount += amount;
+        }
     }
 }
