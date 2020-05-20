@@ -10,20 +10,28 @@ public enum GearType{
     None
 };
 
+public enum AmmoType
+{
+    Arrow,
+    Bomb,
+}
 
-[CreateAssetMenu(fileName = "noNameGear", menuName = "Gear")]
-public class Gear : ScriptableObject
+
+//[CreateAssetMenu(fileName = "noNameGear", menuName = "Gear")]
+public struct Gear //: ScriptableObject
 {
     public string gearName;
     public GearType gearType;
     public int gearLevel;
     public bool needAmmo;
+    public AmmoType ammoType;
+    public GameObject gearBase;
     public bool canDamage;
     public float damage;
     public bool canCrit;
-    public Image itemIcon;
+    public Image gearIcon;
 
-    public Gear()
+    /*public Gear()
     {
         gearName = "noName";
         gearType = GearType.None;
@@ -52,5 +60,6 @@ public class Gear : ScriptableObject
         damage = 0;
         canCrit = false;
         itemIcon = null;
-    }
+    }*/
+
 }

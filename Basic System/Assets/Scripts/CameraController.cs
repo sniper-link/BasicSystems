@@ -7,8 +7,8 @@ public class CameraController : MonoBehaviour
     const float CAM_Y_MIN = 10f;
     const float CAM_Y_MAX = 60f;
 
-    float camCurX = 0;
-    float camCurY = 10;
+    static float camCurX = 0;
+    static float camCurY = 10;
 
     float rotSpeedX = 8;
     float rotSpeedY = 5;
@@ -38,6 +38,7 @@ public class CameraController : MonoBehaviour
         {
             distance = 0.1f;
         }
+        gameFocus = true;
     }
 
     // Start is called before the first frame update
@@ -49,6 +50,7 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
         if (gameFocus)
         {
             newPlayerPos = camLookAt.position;

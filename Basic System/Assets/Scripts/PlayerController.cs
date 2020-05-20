@@ -2,11 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+enum Mode
+{
+    Unarmed,
+    Melee,
+    Range
+}
+
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private Camera playerCamera;
     private Animator animController;
     private CharacterController playerController;
+    private PlayerInventory playerInventory;
 
     public float rotateSpeed = 10;
     public float moveSpeed = 6f;
@@ -20,6 +28,15 @@ public class PlayerController : MonoBehaviour
     public GameObject leftFoot;
     public GameObject rightFoot;
 
+    public GameObject rightHand;
+    public GameObject leftHand;
+
+    // gear items
+    public Gear curSword;
+    public GameObject curBox;
+    public GameObject curShield;
+    public GameObject curTool;
+
     bool isGrounded;
     public bool autoJump = true;
     public bool canSprint = false;
@@ -29,13 +46,22 @@ public class PlayerController : MonoBehaviour
 
     Quaternion newRotation;
 
+    static Quaternion testRotation;
+    static Mode curPlayerMode;
+
     private void Awake()
     {
         animController = transform.GetComponent<Animator>();
         playerController = transform.GetComponent<CharacterController>();
+        playerInventory = transform.GetComponent<PlayerInventory>();
         if (playerCamera == null)
         {
             playerCamera = transform.Find("MainCamera").GetComponent<Camera>();
+        }
+        //DontDestroyOnLoad(gameObject);
+        if (testRotation != null)
+        {
+            transform.rotation = testRotation;
         }
     }
 
@@ -66,15 +92,99 @@ public class PlayerController : MonoBehaviour
         }
 
 
-        if (Input.GetButtonDown("Sprint") && canSprint)
+        /*if (Input.GetButtonDown("Sprint") && canSprint)
         {
             moveSpeed *= 3;
         }
         else if (Input.GetButtonUp("Sprint") && canSprint)
         {
             moveSpeed /= 3;
+        }*/
+
+        if (Input.GetButtonDown("Switch"))
+        {
+            if (curPlayerMode == Mode.Melee)
+            {
+                curPlayerMode = Mode.Range;
+                animController.SetBool("RangeMode", true);
+                animController.SetBool("MeleeMode", false);
+            }
+            else if (curPlayerMode == Mode.Range)
+            {
+                curPlayerMode = Mode.Melee;
+                animController.SetBool("MeleeMode", true);
+                animController.SetBool("RangeMode", false);
+            }
+            else if (curPlayerMode == Mode.Unarmed)
+            {
+                curPlayerMode = Mode.Melee;
+                animController.SetBool("MeleeMode", true);
+                animController.SetBool("RangeMode", false);
+            }
+            Debug.Log(curPlayerMode);
         }
 
+        if (Input.GetButtonDown("LMB"))
+        {
+            if (curPlayerMode == Mode.Melee)
+            {
+                // attack animation
+                animController.SetTrigger("Attacking");
+                //curSword.gearBase.GetComponent<WeaponScript>().UseWeapon();
+            }
+            else if (curPlayerMode == Mode.Range)
+            {
+                curPlayerMode = Mode.Melee;
+            }
+            else if (curPlayerMode == Mode.Unarmed)
+            {
+                curPlayerMode = Mode.Melee;
+            }
+        }
+
+        if (Input.GetButtonDown("RMB"))
+        {
+            if (curPlayerMode == Mode.Melee)
+            {
+                // attack animation
+                //animController.SetTrigger("Attacking");
+                animController.SetBool("ShieldMode", true);
+            }
+            else if (curPlayerMode == Mode.Range)
+            {
+                // zoom in and aim
+            }
+            else if (curPlayerMode == Mode.Unarmed)
+            {
+                curPlayerMode = Mode.Melee;
+            }
+        }
+        else if (Input.GetButtonUp("RMB"))
+        {
+            if (curPlayerMode == Mode.Melee)
+            {
+                // attack animation
+                //animController.SetTrigger("Attacking");
+                animController.SetBool("ShieldMode", false);
+            }
+            else if (curPlayerMode == Mode.Range)
+            {
+                // zoom in and aim
+            }
+            else if (curPlayerMode == Mode.Unarmed)
+            {
+                curPlayerMode = Mode.Melee;
+            }
+        }
+
+        // Testing
+        if (Input.GetKeyDown("v") && playerInventory)
+        {
+            Item testItem = playerInventory.GetFromItemBag("Gold");
+            Debug.Log(testItem.itemName + ": " + testItem.amount);
+            Item testItem2 = playerInventory.GetFromItemBag("Token");
+            Debug.Log(testItem2.itemName + ": " + testItem2.amount);
+        }
 
         moveDir.x = (camForward.x * moveZ) + (camRight.x * moveX);
         moveDir.z = (camForward.z * moveZ) + (camRight.z * moveX);
@@ -83,6 +193,7 @@ public class PlayerController : MonoBehaviour
         if (moveX != 0 || moveZ != 0)
         {
             newRotation = Quaternion.LookRotation(moveDir);
+            testRotation = newRotation;
         }
  
         playerController.Move(moveDir);
@@ -130,13 +241,28 @@ public class PlayerController : MonoBehaviour
         moveDir = Vector3.zero;
     }
 
+    private void OnEnable()
+    {
+        curPlayerMode = Mode.Unarmed;
+    }
+
     private void PlayerJump()
     {
         playerController.Move(jumpDir);
     }
 
-    private void OnCollisionEnter(Collision collision)
+    public void TestAttach(GameObject curObject)
     {
-        Debug.Log(collision.collider.name);
+        curObject.transform.parent = rightHand.transform;
+        curObject.transform.position = rightHand.transform.position;
+        curObject.transform.rotation = rightHand.transform.rotation * Quaternion.Euler(0, 0, 90);
+    }
+
+    public void AttachGear(Gear curGear)
+    {
+        GameObject curGameObject = curGear.gearBase;
+        curGameObject.transform.parent = rightHand.transform;
+        curGameObject.transform.position = rightHand.transform.position;
+        curGameObject.transform.rotation = rightHand.transform.rotation * Quaternion.Euler(0, 0, 90);
     }
 }

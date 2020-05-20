@@ -10,17 +10,12 @@ public enum ItemType
     Material
 }
 
-[CreateAssetMenu(fileName = "noItemName", menuName = "Gear")]
-public class Item : ScriptableObject
+//[CreateAssetMenu(fileName = "noItemName", menuName = "Gear")]
+public struct Item //: ScriptableObject
 {
     public string itemName;
     public ItemType itemType;
     public int amount;
+    public Sprite itemIcon;
 
-    public Item(string name, ItemType type)
-    {
-        itemName = name;
-        itemType = type;
-        amount = 0;
-    }
 }
