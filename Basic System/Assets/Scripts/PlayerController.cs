@@ -180,9 +180,9 @@ public class PlayerController : MonoBehaviour
         // Testing
         if (Input.GetKeyDown("v") && playerInventory)
         {
-            Item testItem = playerInventory.GetFromItemBag("Gold");
+            Item testItem = playerInventory.GetFromItemBag("Gold", out bool haveItem1);
             Debug.Log(testItem.itemName + ": " + testItem.amount);
-            Item testItem2 = playerInventory.GetFromItemBag("Token");
+            Item testItem2 = playerInventory.GetFromItemBag("Token", out bool haveItem2);
             Debug.Log(testItem2.itemName + ": " + testItem2.amount);
         }
 

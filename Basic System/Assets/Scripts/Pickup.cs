@@ -44,6 +44,10 @@ public class Pickup : MonoBehaviour
     [HideInInspector]
     public int amount;
     [HideInInspector]
+    public string costItemName;
+    [HideInInspector]
+    public int costItemAmount;
+    [HideInInspector]
     public Mesh itemMesh;
     [HideInInspector]
     public Material[] itemMaterial;
@@ -140,12 +144,43 @@ public class Pickup : MonoBehaviour
         if (other.CompareTag("Player") && other.TryGetComponent<PlayerUI>(out PlayerUI curUI) && interactable)
         {
             curUI.ShowInteractButton(false);
-            /*if (Input.GetKeyDown("f"))
+        }
+    }
+
+    public void ShopItem(GameObject player)
+    {
+        if (player.TryGetComponent<PlayerInventory>(out PlayerInventory playerInv))
+        {
+            Item retrievedItem = playerInv.GetFromItemBag(costItemName, out bool haveItem);
+            if (haveItem)
             {
-                Debug.Log("Pickuped up");
-                AddToInventory(curCon, curInv);
-                curUI.ShowInteractButton(false);
-            }*/
+                if (costItemAmount > retrievedItem.amount)
+                {
+                    // give prompt not enough amount to trade
+                }
+                else if (costItemAmount <= retrievedItem.amount)
+                {
+                    retrievedItem.amount -= costItemAmount;
+                    playerInv.UpdateItemBag(retrievedItem);
+                    Item newItem = new Item();
+                    if (pickupType == PickupType.Ammo)
+                    {
+                        newItem.itemType = ItemType.Ammo;
+                    }
+                    else if (pickupType == PickupType.Currency)
+                    {
+                        newItem.itemType = ItemType.Currency;
+                    }
+                    else if (pickupType == PickupType.Material)
+                    {
+                        newItem.itemType = ItemType.Material;
+                    }
+                    newItem.amount = amount;
+                    newItem.itemIcon = pickupImage;
+
+                    playerInv.AddToItemBag(newItem);
+                }
+            }
         }
     }
 
@@ -172,7 +207,7 @@ public class Pickup : MonoBehaviour
             newGear.gearBase = this.gameObject;
 
             // add to inventory gearbag
-            curInv.AddToGear(newGear);
+            curInv.AddToGearBag(newGear);
             //WeaponScript curWeaponScript = gameObject.GetComponent<WeaponScript>();
             //curWeaponScript.enabled = true;
             
@@ -202,7 +237,7 @@ public class Pickup : MonoBehaviour
             newItem.itemIcon = pickupImage;
 
             // add to inventory itembag
-            curInv.AddToItem(newItem);
+            curInv.AddToItemBag(newItem);
             Destroy(gameObject);
         }
         else if (pickupType == PickupType.KeyItem)

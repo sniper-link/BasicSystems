@@ -38,6 +38,8 @@ public class PlayerInventory : MonoBehaviour
     Dictionary<string, Item> itemBag = new Dictionary<string, Item>();
     Dictionary<string, KeyItem> keyItemBag = new Dictionary<string, KeyItem>();
 
+    
+
     void Awake()
     {
         if (instance == null)
@@ -62,20 +64,11 @@ public class PlayerInventory : MonoBehaviour
         playerUI = gameObject.GetComponent<PlayerUI>();
         playerController = gameObject.GetComponent<PlayerController>();
     }
-
-    // Start is called before the first frame update
+    
     void Start()
     {
-        /*AddToGear(bow1);
-        AddToGear(bow2);
-        AddToGear(bow3);
-        AddToGear(sword1);
-        AddToGear(shield1);*/
-        //Debug.Log(bow.gearType);
-        //gearBag.Add(bow.gearType.ToString(), bow);
-    }
 
-    // Update is called once per frame
+    }
 
     private void OnEnable()
     {
@@ -89,15 +82,11 @@ public class PlayerInventory : MonoBehaviour
 
     private void PrintOutItems()
     {
-        /*foreach (KeyValuePair<string, Gear> entry in gearBag)
-        {
-            Debug.Log("Item " + entry.Key + " - name: " + entry.Value.gearName + " || type: " + entry.Value.gearType);
-        }*/
         itemBag.TryGetValue("Money", out Item money);
         Debug.Log(money.amount);
     }
 
-    public void AddToGear(Gear newGear)
+    public void AddToGearBag(Gear newGear)
     {
         if (gearBag.TryGetValue(newGear.gearType.ToString(), out Gear curGear))
         {
@@ -108,7 +97,7 @@ public class PlayerInventory : MonoBehaviour
                 gearBag[newGear.gearType.ToString()] = newGear;
                 // get the gear gameobject
                 //newGear.gameObject;
-                UpdateGear(newGear);
+                UpdateGearBag(newGear);
             }
             else if (newGear.gearLevel == curGear.gearLevel)
             {
@@ -123,31 +112,11 @@ public class PlayerInventory : MonoBehaviour
         {
             Debug.Log("Adding New Gear: " + newGear.gearName);
             gearBag.Add(newGear.gearType.ToString(), newGear);
-            UpdateGear(newGear);
+            UpdateGearBag(newGear);
         }
     }
 
-    public void UpdateGear(Gear newGear)
-    {
-        if (newGear.gearType == GearType.Sword)
-        {
-            Debug.Log("attach gear");
-            curSword = newGear;
-            playerController.curSword = newGear;
-            // attach to sword socket
-            playerController.AttachGear(curSword);
-        }
-        else if (newGear.gearType == GearType.Shield)
-        {
-
-        }
-        else if (newGear.gearType == GearType.Bow)
-        {
-
-        }
-    }
-
-    public void AddToItem (Item newItem)
+    public void AddToItemBag (Item newItem)
     {
         if (ValidateItem(newItem))
         {
@@ -176,7 +145,7 @@ public class PlayerInventory : MonoBehaviour
         }
     }
 
-    public void AddToKeyItem (KeyItem newKeyItem)
+    public void AddToKeyItemBag (KeyItem newKeyItem)
     {
         if (keyItemBag.TryGetValue(newKeyItem.keyItemName.ToString(), out KeyItem curKeyItme))
         {
@@ -194,22 +163,63 @@ public class PlayerInventory : MonoBehaviour
         return testGear;
     }
 
-    public Gear GetAllFromGearBag()
+    public Gear[] GetAllFromGearBag()
     {
-        return new Gear();
+        Gear[] PHgear = { };
+        return PHgear;
     }
 
-    public Item GetFromItemBag(string itemType)
+    public Item GetFromItemBag(string itemType, out bool haveItem)
     {
-        Item testItem = new Item();
+        haveItem = false;
+        Item retrievedItem = new Item();
         if (itemBag.TryGetValue(itemType, out Item foundItem))
         {
-            testItem = foundItem;
+            retrievedItem = foundItem;
+            haveItem = true;
         }
-        return testItem;
+        return retrievedItem;
     }
 
     public void GetFromKeyItemBag()
+    {
+
+    }
+
+    public void UpdateItemBag(Item newItem)
+    {
+        if (ValidateItem(newItem))
+        {
+            itemBag[newItem.itemName] = newItem;
+        }
+        else if (!ValidateItem(newItem))
+        {
+            Debug.Log("Double Check Item Info");
+        }
+    }
+
+    public void UpdateGearBag(Gear newGear)
+    {
+        if (newGear.gearType == GearType.Sword)
+        {
+            Debug.Log("attach gear");
+            curSword = newGear;
+            playerController.curSword = newGear;
+            // attach to sword socket
+            playerController.AttachGear(curSword);
+        }
+        else if (newGear.gearType == GearType.Shield)
+        {
+
+        }
+        else if (newGear.gearType == GearType.Bow)
+        {
+
+        }
+    }
+
+    // probably never will be used, but just to have it, why not
+    public void UpdateKeyItemBag(KeyItem newKeyItem)
     {
 
     }
